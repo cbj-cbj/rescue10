@@ -10,7 +10,7 @@
             --secondary-color: #4ecdc4;
             --text-color: #333;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: none !important; animation: none !important; }
         body {
             font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
             height: 100vh;
@@ -18,28 +18,19 @@
             display: flex;
         }
 
-        /* === 左侧：海报轮播区 === */
+        /* === 左侧：静态海报区 === */
         .poster-section {
             flex: 6;
             position: relative;
+            background: url('http://127.0.0.1:8000/animals/大橘.jpg') no-repeat center center/cover;
             background-color: #333;
             overflow: hidden;
         }
-        .bg-slide {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-            transform: scale(1.05); /* 轻微放大效果 */
-        }
-        .bg-slide.active { opacity: 0.8; }
         
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+            background: rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -47,11 +38,8 @@
             color: white;
             z-index: 2;
         }
-        .overlay h1 { font-size: 3.5em; margin-bottom: 15px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .overlay h1 { font-size: 3.5em; margin-bottom: 15px; }
         .overlay p { font-size: 1.4em; opacity: 0.9; max-width: 600px; line-height: 1.6; }
-        .dots { display: flex; gap: 10px; margin-top: 30px; }
-        .dot { width: 12px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 50%; cursor: pointer; transition: 0.3s; }
-        .dot.active { background: white; transform: scale(1.2); }
 
         /* === 右侧：登录表单区 === */
         .login-section {
@@ -87,42 +75,36 @@
             top: 50%;
             transform: translateY(-50%);
             color: #aaa;
-            transition: 0.3s;
         }
         .input-group input {
             width: 100%;
             padding: 16px 20px 16px 50px;
             border: 2px solid #f0f2f5;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
             outline: none;
-            transition: 0.3s;
             background: #f9fbfc;
         }
         .input-group input:focus {
             border-color: var(--primary-color);
             background: white;
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.1);
         }
         .input-group input:focus + i { color: var(--primary-color); }
 
         .btn-login {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            background: #ff6b6b;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
             margin-top: 10px;
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
         }
-        .btn-login:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4); }
-        .btn-login:active { transform: scale(0.98); }
-        .btn-login:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        .btn-login:hover { background: #ff5252; }
+        .btn-login:disabled { background: #ccc; cursor: not-allowed; }
 
         .footer-links {
             margin-top: 30px;
@@ -138,23 +120,21 @@
         }
         .footer-links a:hover { text-decoration: underline; }
 
-        /* 移动端适配 */
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .poster-section { flex: 1; display: none; } /* 手机端隐藏海报或缩小 */
+            .poster-section { display: none; } 
             .login-section { flex: 1; }
         }
     </style>
 </head>
 <body>
 
-<div class="poster-section" id="slider-container">
+<div class="poster-section">
     <div class="overlay">
         <h1>每一次相遇<br>都是奇迹 ✨</h1>
         <p>校园流浪动物救助平台致力于为每一个小生命寻找温暖的归宿。<br>加入我们，用爱终止流浪。</p>
-        <div class="dots" id="dots-container"></div>
     </div>
-    </div>
+</div>
 
 <div class="login-section">
     <div class="login-wrapper">
@@ -179,58 +159,8 @@
 </div>
 
 <script>
-    const SERVER_URL = "http://127.0.0.1:8000"; // 确保此地址与后端一致
+    const SERVER_URL = "http://127.0.0.1:8000";
     
-    // 配置轮播图片 (使用您已上传的图片)
-    const images = [
-        "/animals/大橘.jpg", 
-        "/animals/小白.jpg", 
-        "/animals/奥利奥.jpg",
-        "/animals/大头.jpg",
-        "/animals/旺财.jpg",
-        "/animals/煤球.jpg"
-    ];
-
-    // 初始化轮播图
-    function initSlider() {
-        const container = document.getElementById('slider-container');
-        const dotsContainer = document.getElementById('dots-container');
-        
-        images.forEach((img, index) => {
-            // 创建背景层
-            const div = document.createElement('div');
-            div.className = `bg-slide ${index === 0 ? 'active' : ''}`;
-            // 拼接完整 URL
-            div.style.backgroundImage = `url('${SERVER_URL}${img}')`;
-            container.insertBefore(div, container.firstChild); // 插入到遮罩层下面
-
-            // 创建指示点
-            const dot = document.createElement('div');
-            dot.className = `dot ${index === 0 ? 'active' : ''}`;
-            dot.onclick = () => switchSlide(index);
-            dotsContainer.appendChild(dot);
-        });
-
-        // 自动播放
-        let current = 0;
-        setInterval(() => {
-            current = (current + 1) % images.length;
-            switchSlide(current);
-        }, 5000);
-    }
-
-    function switchSlide(index) {
-        const slides = document.querySelectorAll('.bg-slide');
-        const dots = document.querySelectorAll('.dot');
-        
-        slides.forEach(s => s.classList.remove('active'));
-        dots.forEach(d => d.classList.remove('active'));
-        
-        slides[images.length - 1 - index].classList.add('active'); // 注意插入顺序是反的
-        dots[index].classList.add('active');
-    }
-
-    // 登录逻辑 (保持原有功能不变)
     async function handleLogin() {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
@@ -254,7 +184,7 @@
             if(res.ok) {
                 const data = await res.json();
                 localStorage.setItem('currentUser', JSON.stringify(data));
-                btn.style.background = "#28a745"; // 成功变绿
+                btn.style.background = "#28a745"; 
                 btn.innerText = "✨ 登录成功！";
                 
                 setTimeout(() => { 
@@ -263,7 +193,7 @@
                     } else {
                         location.href = 'home.html';
                     }
-                }, 800);
+                }, 500);
             } else {
                 const err = await res.json();
                 alert("登录失败：" + err.detail);
@@ -278,17 +208,13 @@
         function resetBtn(){ 
             btn.innerText = "立即登录"; 
             btn.disabled = false; 
-            btn.style.background = ""; // 恢复原色
+            btn.style.background = ""; 
         }
     }
 
-    // 回车键登录支持
     document.addEventListener('keydown', function(event) { 
         if(event.key === "Enter") handleLogin(); 
     });
-
-    // 启动
-    window.onload = initSlider;
 </script>
 </body>
 </html>

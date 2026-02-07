@@ -6,16 +6,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --primary: #ff6b6b; --secondary: #4ecdc4; --bg: #f9fbfc; }
+        * { transition: none !important; animation: none !important; box-shadow: none !important; }
         body { font-family: 'Segoe UI','Microsoft YaHei'; background: var(--bg); margin: 0; color: #444; }
         
         .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
-        .back-btn { text-decoration: none; color: #666; font-weight: bold; display: inline-flex; align-items: center; margin-bottom: 20px; transition: 0.3s; }
-        .back-btn:hover { color: var(--primary); transform: translateX(-5px); }
+        .back-btn { text-decoration: none; color: #666; font-weight: bold; display: inline-flex; align-items: center; margin-bottom: 20px; }
+        .back-btn:hover { color: var(--primary); }
         .back-btn i { margin-right: 8px; }
 
         .profile-card {
             background: white; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
             display: flex; flex-wrap: wrap;
         }
         
@@ -44,10 +45,9 @@
             display: block; width: 100%; text-align: center; background: var(--primary); 
             color: white; padding: 18px; border-radius: 50px; border: none; 
             font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 40px; 
-            transition: all 0.3s; box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
         }
-        .btn-adopt:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5); }
-        .btn-adopt:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-adopt:hover { background: #ff5252; }
+        .btn-adopt:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -57,7 +57,7 @@
     
     <div class="profile-card" id="profile-content">
         <div style="padding:60px; text-align:center; width:100%; color:#999">
-            <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>正在读取档案...
+            <i class="fas fa-spinner fa-2x"></i><br><br>正在读取档案...
         </div>
     </div>
 </div>
@@ -82,7 +82,6 @@
 
     async function fetchDetail(id) {
         try {
-            // ✅ 修复：请求 URL 改为 /animals/detail/${id}
             const res = await fetch(`${SERVER_URL}/animals/detail/${id}`);
             if(!res.ok) throw new Error("未找到数据");
             const a = await res.json();
