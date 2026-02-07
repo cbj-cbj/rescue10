@@ -5,13 +5,17 @@
     <title>注册</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI','微软雅黑'; height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
-        @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
-        .login-box { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        /* 全局禁止动画 */
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: none !important; animation: none !important; }
+        body { font-family: 'Segoe UI','微软雅黑'; height: 100vh; display: flex; justify-content: center; align-items: center; background: #f0f2f5; }
+        
+        .login-box { background: white; padding: 40px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .input-group { margin-bottom: 15px; }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
-        .btn { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        
+        .btn { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .btn:hover { background: #218838; }
+        
         .tip { font-size: 12px; color: #888; text-align: left; margin-top: 2px; }
     </style>
 </head>
@@ -24,11 +28,12 @@
     <div class="input-group"><input id="s" placeholder="学号 (22-25开头, 10位)"><div class="tip">格式：22-25开头，后三位001-100</div></div>
     <div class="input-group"><input id="ph" placeholder="手机号"></div>
     <button class="btn" onclick="reg()">注 册</button>
-    <div style="margin-top:15px"><a href="login.html" style="color:#007bff;text-decoration:none">去登录</a></div>
+    <div style="margin-top:15px"><a href="index.html" style="color:#007bff;text-decoration:none">去登录</a></div>
 </div>
 <script>
     async function reg() {
         const u=document.getElementById('u').value, p=document.getElementById('p').value, r=document.getElementById('r').value, s=document.getElementById('s').value, ph=document.getElementById('ph').value;
+        
         if(!u||!p||!s) return alert("请填写完整");
         if(s.length!==10 || !/^\d+$/.test(s)) return alert("学号必须是10位纯数字");
         if(!['22','23','24','25'].includes(s.substring(0,2))) return alert("学号必须以22-25开头");
@@ -37,7 +42,7 @@
 
         try {
             const res = await fetch('http://127.0.0.1:8000/users', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p,real_name:r,student_id:s,phone:ph})});
-            if(res.ok) { alert("注册成功"); location.href='login.html'; }
+            if(res.ok) { alert("注册成功"); location.href='index.html'; }
             else alert("失败：" + (await res.json()).detail);
         } catch(e) { alert("连接失败"); }
     }

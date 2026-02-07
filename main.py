@@ -6,36 +6,30 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from db_config import engine, get_db, Base
-import models
-import schemas
-from datetime import datetime
+import models, schemas
 
 # 自动建表
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="校园流浪动物救助系统", version="2.5.0")
 
+# 跨域配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-# 1. 用户模块
+# 初始化管理员 (精简版)
 def init_admin():
     from db_config import SessionLocal
     db = SessionLocal()
-    try:
-        if not db.query(models.User).filter(models.User.username == "admin").first():
-            print("初始化管理员: admin / admin123")
-            db.add(models.User(username="admin", password="admin123", real_name="管理员", student_id="0000000000", phone="000", role="admin"))
-            db.commit()
-    except: pass
-    finally: db.close()
+    if not db.query(models.User).filter(models.User.username == "admin").first():
+        db.add(models.User(username="admin", password="admin123", real_name="管理员", student_id="0000000000", phone="000", role="admin"))
+        db.commit()
+    db.close()
 init_admin()
 
+# --- 1. 用户模块 ---
 @app.post("/users", response_model=schemas.UserResponse, tags=["用户"])
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if user.username == "admin": raise HTTPException(400, "禁止注册 admin")
@@ -62,9 +56,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user: raise HTTPException(404, "用户不存在")
     if user.role == 'admin': raise HTTPException(400, "禁止删除管理员")
-    db.query(models.Adoption).filter(models.Adoption.user_id == user_id).delete()
-    db.query(models.Donation).filter(models.Donation.user_id == user_id).delete()
-    db.query(models.Volunteer).filter(models.Volunteer.user_id == user_id).delete()
+    # 级联删除相关数据
+    for model in [models.Adoption, models.Donation, models.Volunteer]:
+        db.query(model).filter(model.user_id == user_id).delete()
     db.delete(user); db.commit()
     return {"message": "已注销"}
 
@@ -72,10 +66,10 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 @app.get("/animals", response_model=List[schemas.AnimalResponse])
 def get_animals(db: Session = Depends(get_db)): return db.query(models.Animal).all()
 
-@app.get("/animals/detail/{animal_id}", response_model=schemas.AnimalResponse, tags=["2. 动物档案"])
+@app.get("/animals/detail/{animal_id}", response_model=schemas.AnimalResponse)
 def get_animal_detail(animal_id: int, db: Session = Depends(get_db)):
     animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
-    if not animal: raise HTTPException(status_code=404, detail="未找到该动物档案")
+    if not animal: raise HTTPException(404, "未找到该动物档案")
     return animal
 
 @app.post("/animals", response_model=schemas.AnimalResponse)
@@ -92,10 +86,10 @@ def update_animal_status(id: int, s: schemas.AnimalStatusUpdate, db: Session = D
     db.commit(); db.refresh(a)
     return a
 
-@app.delete("/animals/{animal_id}", tags=["2. 动物档案"])
+@app.delete("/animals/{animal_id}")
 def delete_animal(animal_id: int, db: Session = Depends(get_db)):
     animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
-    if not animal: raise HTTPException(status_code=404, detail="找不到该动物")
+    if not animal: raise HTTPException(404, "找不到该动物")
     db.query(models.Adoption).filter(models.Adoption.animal_id == animal_id).delete()
     db.delete(animal); db.commit()
     return {"message": "删除成功"}
@@ -126,8 +120,7 @@ def audit_adoption(id: int, audit: schemas.AdoptionAudit, db: Session = Depends(
 @app.delete("/adoptions/{id}")
 def del_adoption(id: int, db: Session = Depends(get_db)):
     db.query(models.Adoption).filter(models.Adoption.id == id).delete()
-    db.commit()
-    return {"msg": "deleted"}
+    db.commit(); return {"msg": "deleted"}
 
 # --- 4. 捐赠模块 ---
 @app.post("/donations", response_model=schemas.DonationResponse)
@@ -163,8 +156,7 @@ def audit_vol(id: int, audit: schemas.VolunteerAudit, db: Session = Depends(get_
 
 @app.delete("/volunteers/{id}")
 def del_vol(id: int, db: Session = Depends(get_db)):
-    db.query(models.Volunteer).filter(models.Volunteer.id == id).delete()
-    db.commit()
+    db.query(models.Volunteer).filter(models.Volunteer.id == id).delete(); db.commit()
     return {"msg": "deleted"}
 
 # --- 6. 任务 ---
@@ -179,8 +171,7 @@ def get_tasks(db: Session = Depends(get_db)): return db.query(models.Task).all()
 
 @app.delete("/tasks/{id}")
 def del_task(id: int, db: Session = Depends(get_db)):
-    db.query(models.Task).filter(models.Task.id == id).delete()
-    db.commit()
+    db.query(models.Task).filter(models.Task.id == id).delete(); db.commit()
     return {"msg": "deleted"}
 
 # --- 7. 统计 ---
@@ -200,15 +191,14 @@ def get_stats(db: Session = Depends(get_db)):
         }
     }
 
-# --- 8. 寻宠 (关键修改点) ---
-@app.post("/lost-pets", response_model=schemas.LostPetResponse, tags=["8. 寻宠"])
+# --- 8. 寻宠 ---
+@app.post("/lost-pets", response_model=schemas.LostPetResponse)
 def create_lost_pet(p: schemas.LostPetCreate, db: Session = Depends(get_db)):
-    # 强制状态为 "待审核"
     np = models.LostPet(**p.dict(), status="待审核")
     db.add(np); db.commit(); db.refresh(np)
     return np
 
-@app.put("/lost-pets/{id}/status", response_model=schemas.LostPetResponse, tags=["8. 寻宠"])
+@app.put("/lost-pets/{id}/status", response_model=schemas.LostPetResponse)
 def audit_lost_pet(id: int, audit: schemas.LostPetAudit, db: Session = Depends(get_db)):
     p = db.query(models.LostPet).filter(models.LostPet.id == id).first()
     if not p: raise HTTPException(404, "Not found")
@@ -216,15 +206,15 @@ def audit_lost_pet(id: int, audit: schemas.LostPetAudit, db: Session = Depends(g
     db.commit(); db.refresh(p)
     return p
 
-@app.get("/lost-pets", response_model=List[schemas.LostPetResponse], tags=["8. 寻宠"])
+@app.get("/lost-pets", response_model=List[schemas.LostPetResponse])
 def get_lost_pets(db: Session = Depends(get_db)): return db.query(models.LostPet).all()
 
-@app.delete("/lost-pets/{id}", tags=["8. 寻宠"])
+@app.delete("/lost-pets/{id}")
 def delete_lost_pet(id: int, db: Session = Depends(get_db)):
-    db.query(models.LostPet).filter(models.LostPet.id == id).delete()
-    db.commit()
+    db.query(models.LostPet).filter(models.LostPet.id == id).delete(); db.commit()
     return {"msg": "deleted"}
 
+# 挂载静态文件
 if not os.path.exists("animals"): os.makedirs("animals")
 app.mount("/animals", StaticFiles(directory="animals"), name="animals")
 
