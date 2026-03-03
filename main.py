@@ -19,7 +19,7 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-# 初始化管理员 (精简版)
+# 初始化管理员 (精简版12)
 def init_admin():
     from db_config import SessionLocal
     db = SessionLocal()
