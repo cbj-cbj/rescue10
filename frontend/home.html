@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>主页 - 校园流浪动物救助</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff6b6b; --secondary: #4ecdc4; --dark: #333; --light: #f9fbfc; }
+        /* 全局禁止动画 */
+        * { transition: none !important; animation: none !important; }
+        body { margin:0; font-family:'Segoe UI','Microsoft YaHei',sans-serif; background: var(--light); color:#444; overflow-x:hidden; }
+        
+        /* === 导航栏 === */
+        .header { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.95); border-bottom: 1px solid #eee; padding:0 20px; }
+        .nav-container { max-width:1200px; margin:0 auto; height:70px; display:flex; justify-content:space-between; align-items:center; }
+        .logo { font-size:1.6em; font-weight:800; color: #ff6b6b; display:flex; align-items:center; gap:10px; cursor: pointer; }
+        .menu { display:flex; gap:8px; background:rgba(0,0,0,0.04); padding:5px; border-radius:30px; }
+        .menu-item { padding:8px 25px; border-radius:25px; cursor:pointer; font-weight:600; color:#666; position: relative; }
+        .menu-item:hover { color: var(--primary); background: rgba(255,255,255,0.8); }
+        .menu-item.active { background:white; color:var(--primary); box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+        .btn-logout { padding:8px 20px; border:2px solid #ffecec; background:white; color:#ff6b6b; border-radius:30px; cursor:pointer; font-weight:700; }
+        .btn-logout:hover { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+
+        /* === 主体内容 === */
+        .main-content { max-width:1200px; margin:30px auto; padding:0 20px; min-height:80vh; }
+        .view-section { display:none; }
+        .view-section.active { display:block; }
+
+        /* Hero 卡片 */
+        .hero-card { background: #ff9a9e; border-radius:25px; padding:60px; color:white; text-align:center; margin-bottom:40px; position: relative; overflow: hidden; }
+        .hero-card h1 { font-size:3.5em; margin:0 0 15px; letter-spacing: 2px; }
+        
+        /* 统计数据 */
+        .stats-grid { display:flex; gap:30px; margin-bottom:50px; }
+        .stat-box { flex:1; background:white; padding:35px; border-radius:20px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02); }
+        .stat-num { font-size:3em; font-weight:800; color:#333; display:block; margin-bottom: 5px; }
+        .stat-label { font-size: 1.1em; color: #777; font-weight: 500; }
+        .stat-box i { font-size: 2em; margin-bottom: 15px; }
+        .icon-blue { color:#54a0ff; } .icon-green { color:#1dd1a1; } .icon-pink { color:#ff6b6b; }
+
+        /* 动物列表 */
+        .grid-container { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:30px; padding-bottom: 40px; }
+        .animal-card { background:white; border-radius:20px; overflow:hidden; box-shadow:0 5px 15px rgba(0,0,0,0.05); display:flex; flex-direction:column; position: relative; }
+        .card-img-wrapper { overflow: hidden; height: 240px; width: 100%; }
+        .card-img { width:100%; height:100%; object-fit:cover; cursor: pointer; }
+        .card-info { padding:25px; flex-grow:1; position: relative; z-index: 1; background: white; }
+        .tag { padding:5px 15px; border-radius:15px; font-size:0.85em; font-weight:700; letter-spacing: 1px; }
+        .tag-wait { background:#e0f9f4; color:#1dd1a1; } .tag-done { background:#f1f2f6; color:#a4b0be; }
+        .btn-adopt { width:100%; padding:18px; border:none; font-weight:700; font-size: 1.05em; cursor:pointer; position: relative; overflow: hidden; }
+        .btn-adopt.enable { background:#ff6b6b; color:white; }
+        .btn-adopt.enable:hover { background:#ff5252; }
+        .btn-adopt.disable { background:#f1f2f6; color:#ccc; cursor: not-allowed; }
+
+        /* 表格与列表 */
+        .table-card { background:white; border-radius:20px; padding:40px; box-shadow:0 5px 15px rgba(0,0,0,0.05); }
+        table { width:100%; border-collapse:separate; border-spacing:0 15px; }
+        th { text-align: left; padding: 10px 20px; color: #888; font-weight: 600; }
+        td { background:#f8f9fa; padding:20px; }
+        tr:hover td { background: #f0f0f0; }
+        tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
+        tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+
+        /* 寻宠卡片 */
+        .lost-card { background:white; border-radius:15px; padding:25px; margin-bottom:25px; border-left:6px solid #ccc; box-shadow:0 2px 5px rgba(0,0,0,0.03); cursor: default; }
+        .lost-card.lost { border-color:#ff6b6b; } .lost-card.found { border-color:#1dd1a1; }
+        
+        /* 交互按钮 */
+        .btn-action { padding:12px 30px; border-radius:50px; border:none; font-weight:700; cursor:pointer; color:white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-orange { background: #ff9f43; } 
+        .btn-blue { background: #54a0ff; }
+        .btn-white { background: white; color: #ff6b6b; }
+        
+        .loading { text-align: center; padding: 50px; color: #ccc; font-size: 1.5em; }
+        .refresh-indicator { position: fixed; bottom: 10px; right: 10px; font-size: 0.8em; color: #ccc; opacity: 0.5; }
+
+        /* 空状态美化 */
+        .empty-box {
+            text-align: center; padding: 80px 20px; background: white;
+            border-radius: 20px; border: 2px dashed #e0e0e0;
+            color: #888; margin-top: 20px;
+        }
+        .empty-box h3 { color: #555; margin: 20px 0 10px; font-size: 1.5em; }
+        .empty-box p { color: #999; font-size: 1.1em; margin-bottom: 35px; }
+        .empty-box i.icon-main { 
+            font-size: 5em; color: #ffb86c; margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="nav-container">
+        <div class="logo" onclick="switchView('home')"><i class="fas fa-paw"></i> 校园流浪动物救助</div>
+        <nav class="menu">
+            <div class="menu-item active" onclick="switchView('home')">首页</div>
+            <div class="menu-item" onclick="switchView('animals')">领养中心</div>
+            <div class="menu-item" onclick="switchView('lost')">寻宠启事</div>
+            <div class="menu-item" onclick="switchView('donate')">捐赠榜</div>
+            <div class="menu-item" onclick="switchView('volunteer')">志愿者</div>
+        </nav>
+        <div style="display:flex; gap:15px; align-items:center">
+            <span id="welcome-msg" style="font-weight:600; color:#555"></span>
+            <button class="btn-logout" onclick="logout()">退出</button>
+        </div>
+    </div>
+</header>
+<div class="main-content">
+    <div id="view-home" class="view-section active">
+        <div class="hero-card">
+            <h1>每一次相遇 都是奇迹 ✨</h1>
+            <p style="font-size: 1.2em; opacity: 0.9;">用领养代替购买，让爱心在校园传递</p>
+            <div style="margin-top: 30px;">
+                <button class="btn-action btn-white" style="font-size:1.1em; padding: 15px 40px;" onclick="switchView('animals')">立即领养 <i class="fas fa-arrow-right" style="margin-left: 8px;"></i></button>
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-box"><i class="fas fa-users icon-blue"></i><span class="stat-num" id="stat-users">0</span><span class="stat-label">爱心用户</span></div>
+            <div class="stat-box"><i class="fas fa-cat icon-pink"></i><span class="stat-num" id="stat-animals">0</span><span class="stat-label">救助动物</span></div>
+            <div class="stat-box"><i class="fas fa-gift icon-green"></i><span class="stat-num" id="stat-donations">0</span><span class="stat-label">收到捐赠</span></div>
+        </div>
+    </div>
+    
+    <div id="view-animals" class="view-section">
+        <div id="animal-list" class="grid-container"><div class="loading"><i class="fas fa-spinner"></i> 数据加载中...</div></div>
+    </div>
+    
+    <div id="view-lost" class="view-section">
+        <div style="max-width:800px; margin:0 auto">
+            <div style="margin-bottom:30px">
+                <h2 style="font-size: 1.8em; color: #444;">📢 寻宠 & 招领</h2>
+            </div>
+            <div id="lost-list"><div class="loading">暂无信息</div></div>
+        </div>
+    </div>
+
+    <div id="view-donate" class="view-section">
+        <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
+                <h2 style="font-size: 1.8em; color: #444;">🏆 爱心捐赠风云榜</h2>
+                <button class="btn-action btn-orange" onclick="donate()"><i class="fas fa-gift"></i> 我要捐赠</button>
+            </div>
+            <table><thead><tr><th>爱心用户</th><th>物品</th><th>数量</th><th>寄语</th><th>时间</th></tr></thead><tbody id="donation-list"></tbody></table>
+        </div>
+    </div>
+    
+    <div id="view-volunteer" class="view-section">
+        <div class="table-card" style="text-align:center; padding:60px 40px">
+            <i class="fas fa-hands-helping" style="font-size:5em; color:#ff6b6b; margin-bottom:20px; display:inline-block;"></i>
+            <h2 style="font-size:2em; margin-bottom: 10px;">成为志愿者</h2>
+            <p style="color:#777; margin-bottom: 30px;">加入我们，一起为流浪小动物撑起一把伞</p>
+            <button class="btn-action btn-blue" style="font-size:1.2em; padding:15px 50px" onclick="applyVol()">🚀 填写申请表</button>
+            <div style="margin-top:60px; text-align:left"><h3 style="border-left: 5px solid #ff6b6b; padding-left: 15px;">📝 我的申请记录</h3><table><thead><tr><th>理由</th><th>时间</th><th>状态</th><th>日期</th></tr></thead><tbody id="my-vol-list"></tbody></table></div>
+        </div>
+    </div>
+</div>
+<div class="refresh-indicator"><i class="fas fa-sync"></i> 实时同步中</div>
+
+<script>
+    const SERVER_URL="http://127.0.0.1:8000"; 
+    let currentUser=null, userMap={};
+    let lastSnapshots = { users: '', stats: '', animals: '', lost: '', donations: '', volunteers: '' };
+    const PAGE_VERSION = new Date().getTime(); 
+    function getImgUrl(url) { return url + (url.includes('?') ? '&' : '?') + '_v=' + PAGE_VERSION; }
+    function getApiUrl(url) { return url + (url.includes('?') ? '&' : '?') + '_t=' + new Date().getTime(); }
+
+    (function(){ const s=localStorage.getItem('currentUser'); if(!s) return location.href='index.html'; currentUser=JSON.parse(s); })();
+    
+    window.onload = async function() { 
+        document.getElementById('welcome-msg').innerText=`Hi, ${currentUser.real_name}`; 
+        await refreshAllData();
+        const params = new URLSearchParams(window.location.search);
+        const view = params.get('view');
+        if(view) switchView(view);
+        setInterval(refreshAllData, 3000);
+    };
+
+    async function refreshAllData() {
+        await Promise.all([ fetchUsers(), loadHomeStats(), fetchAnimals(), fetchLost(), fetchDonations(), fetchMyVolunteers() ]);
+    }
+
+    async function fetchUsers(){ 
+        try{ 
+            const res=await fetch(getApiUrl(SERVER_URL+"/users")); 
+            const list=await res.json(); 
+            const fp = JSON.stringify(list);
+            if(fp === lastSnapshots.users) return;
+            lastSnapshots.users = fp;
+            list.forEach(u=>userMap[u.id]=u.real_name); 
+        }catch(e){} 
+    }
+    
+    function switchView(n){ 
+        document.querySelectorAll('.view-section').forEach(el=>el.classList.remove('active')); 
+        document.querySelectorAll('.menu-item').forEach(el=>el.classList.remove('active')); 
+        const targetView = document.getElementById(`view-${n}`);
+        targetView.classList.add('active');
+        const map={'home':0,'animals':1,'lost':2,'donate':3,'volunteer':4}; 
+        document.querySelectorAll('.menu-item')[map[n]].classList.add('active'); 
+    }
+
+    async function loadHomeStats(){ 
+        try{ 
+            const res=await fetch(getApiUrl(SERVER_URL+"/stats")); 
+            const data=await res.json(); 
+            const fp = JSON.stringify(data);
+            if(fp === lastSnapshots.stats) return;
+            lastSnapshots.stats = fp;
+            document.getElementById('stat-users').innerText=data.core_metrics.total_users; 
+            document.getElementById('stat-animals').innerText=data.core_metrics.total_animals; 
+            document.getElementById('stat-donations').innerText=data.core_metrics.total_donations; 
+        }catch(e){} 
+    }
+    
+    async function fetchAnimals(){ 
+        const res=await fetch(getApiUrl(SERVER_URL+"/animals")); 
+        const list=await res.json(); 
+        const fp = JSON.stringify(list);
+        if(fp === lastSnapshots.animals) return;
+        lastSnapshots.animals = fp;
+        document.getElementById('animal-list').innerHTML=list.map(a=>{ 
+            let baseImg = a.image_url.startsWith('/') ? SERVER_URL+a.image_url : a.image_url;
+            let img = getImgUrl(baseImg);
+            let btn=a.status==='待领养'?`<button class="btn-adopt enable" onclick="adopt(${a.id},'${a.name}')">❤️ 申请领养</button>`:`<button class="btn-adopt disable">🚫 已被领养</button>`; 
+            return `
+            <div class="animal-card">
+                <div class="card-img-wrapper" onclick="location.href='detail.html?id=${a.id}'">
+                    <img src="${img}" class="card-img" title="点击查看 ${a.name} 的详细档案">
+                </div>
+                <div class="card-info">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:1.5em;font-weight:700;color:#333">${a.name}</span>
+                        <span class="tag ${a.status==='待领养'?'tag-wait':'tag-done'}">${a.status}</span>
+                    </div>
+                    <p style="color:#666; margin:0 0 15px 0;"><i class="fas fa-dna" style="color:#4ecdc4;margin-right:5px"></i> ${a.breed}</p>
+                </div>
+                ${btn}
+            </div>`
+        }).join(''); 
+    }
+
+    async function fetchDonations(){ 
+        const res=await fetch(getApiUrl(SERVER_URL+"/donations")); 
+        const list=await res.json(); 
+        const fp = JSON.stringify(list);
+        if(fp === lastSnapshots.donations) return;
+        lastSnapshots.donations = fp;
+        document.getElementById('donation-list').innerHTML=list.reverse().map(d=>`<tr><td style="font-weight:bold;color:#555">${userMap[d.user_id]||`ID:${d.user_id}`}</td><td style="color:#ff6b6b;font-weight:bold">${d.item_name}</td><td>${d.quantity}</td><td style="color:#888;font-style:italic">"${d.remarks||'加油'}"</td><td>${new Date(d.donate_date).toLocaleDateString()}</td></tr>`).join(''); 
+    }
+    
+    async function adopt(id, name){ 
+        const c=prompt("请输入学院:"); if(c===null) return; const cl=prompt("请输入班级:"); if(cl===null) return; const r=prompt(`申请理由:`); if(r===null) return;
+        if(!c||!cl||!r) return alert("请填写完整信息");
+        await fetch(SERVER_URL+"/adoptions",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,animal_id:id,college:c,student_class:cl,apply_reason:r})}); 
+        alert("已提交申请，请等待审核！"); 
+        lastSnapshots.animals = ''; 
+        refreshAllData();
+    }
+
+    async function fetchLost(){ 
+        const res=await fetch(getApiUrl(SERVER_URL+"/lost-pets")); 
+        const list=await res.json(); 
+        const activeList = list.filter(p => p.status === '已通过');
+        const fp = JSON.stringify(activeList);
+        if(fp === lastSnapshots.lost) return;
+        lastSnapshots.lost = fp;
+        const container = document.getElementById('lost-list');
+        if (activeList.length === 0) {
+            container.innerHTML = `
+                <div class="empty-box">
+                    <i class="fas fa-sun icon-main"></i>
+                    <h3>暂无寻宠/寻主信息</h3>
+                    <p>太好了！这意味着毛孩子们都很安全，都在温暖的家里 ❤️</p>
+                    <button class="btn-action btn-blue" onclick="publishLost()" style="margin-top:10px; padding: 12px 35px; font-size:1em">
+                        <i class="fas fa-bullhorn"></i> 我要发布信息
+                    </button>
+                </div>`;
+        } else {
+            container.innerHTML = activeList.reverse().map(p => `
+                <div class="lost-card ${p.type==='寻宠'?'lost':'found'}">
+                    <div style="display:flex;justify-content:space-between">
+                        <strong style="font-size:1.3em">${p.title}</strong>
+                        <span style="padding:4px 12px;border-radius:20px;color:white;font-size:0.85em;font-weight:bold;background:${p.type==='寻宠'?'#ff6b6b':'#1dd1a1'}">${p.type}</span>
+                    </div>
+                    <p style="color:#666;line-height:1.6;margin:15px 0">${p.description}</p>
+                    <div style="margin-top:15px;color:#888;font-size:0.9em">
+                        <i class="fas fa-phone-alt"></i> ${p.contact} 
+                        <span style="float:right">${new Date(p.created_at).toLocaleDateString()}</span>
+                    </div>
+                </div>`).join(''); 
+        }
+    }
+    
+    async function publishLost(){ 
+        const t=prompt("类型 (1:寻宠, 2:寻主)"); if(t===null) return; const ti=prompt("标题"); if(ti===null) return; const d=prompt("描述"); if(d===null) return; const c=prompt("联系方式"); if(c===null) return;
+        if(t&&ti) { 
+            await fetch(SERVER_URL+"/lost-pets",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t==='1'?'寻宠':'寻主',title:ti,description:d,contact:c})}); 
+            alert("✅ 信息已提交！\n请耐心等待管理员审核，审核通过后将显示在列表中。"); 
+            refreshAllData(); 
+        }
+    }
+
+    async function donate(){ 
+        const n=prompt("物品名"); if(n===null) return; const q=prompt("数量"); if(q===null) return; const rm=prompt("寄语"); if(rm===null) return;
+        if(n) { await fetch(SERVER_URL+"/donations",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,item_name:n,quantity:q,remarks:rm})}); alert("感谢您的慷慨捐赠！❤️"); refreshAllData(); }
+    }
+
+    async function applyVol(){ 
+        const r=prompt("申请理由:"); if(r===null) return; const t=prompt("可用时间:"); if(t===null) return;
+        if(!r.trim() || !t.trim()) return alert("不能为空");
+        try { 
+            const res = await fetch(SERVER_URL+"/volunteers",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,reason:r,available_time:t})}); 
+            if(res.ok) { alert("申请已提交"); lastSnapshots.volunteers = ''; refreshAllData(); } 
+        } catch(e) { alert("网络错误"); }
+    }
+
+    async function fetchMyVolunteers(){ 
+        const res=await fetch(getApiUrl(SERVER_URL+"/volunteers")); 
+        const list=await res.json(); 
+        const myList = list.filter(v=>v.user_id===currentUser.id);
+        const fp = JSON.stringify(myList);
+        if(fp === lastSnapshots.volunteers) return;
+        lastSnapshots.volunteers = fp;
+        document.getElementById('my-vol-list').innerHTML=myList.reverse().map(v=>`<tr><td>${v.reason}</td><td>${v.available_time}</td><td><span style="color:${v.status==='已通过'?'#28a745':(v.status==='已拒绝'?'#dc3545':'#e67e22')};font-weight:bold">${v.status}</span></td><td>${new Date(v.apply_date).toLocaleDateString()}</td></tr>`).join(''); 
+    }
+    
+    function logout(){ if(confirm("确定要退出吗?")){ localStorage.removeItem('currentUser'); location.href='index.html'; } }
+</script>
+</body>
+</html>

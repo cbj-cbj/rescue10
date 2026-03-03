@@ -1,0 +1,341 @@
+adoptions：
+-- Table: public.adoptions
+
+-- DROP TABLE IF EXISTS public.adoptions;
+
+CREATE TABLE IF NOT EXISTS public.adoptions
+(
+    id integer NOT NULL DEFAULT nextval('adoptions_id_seq'::regclass),
+    user_id integer,
+    animal_id integer,
+    college character varying COLLATE pg_catalog."default",
+    student_class character varying COLLATE pg_catalog."default",
+    apply_reason character varying COLLATE pg_catalog."default",
+    status character varying COLLATE pg_catalog."default",
+    admin_comment character varying COLLATE pg_catalog."default",
+    apply_date timestamp without time zone,
+    CONSTRAINT adoptions_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.adoptions
+    OWNER to postgres;
+-- Index: ix_adoptions_animal_id
+
+-- DROP INDEX IF EXISTS public.ix_adoptions_animal_id;
+
+CREATE INDEX IF NOT EXISTS ix_adoptions_animal_id
+    ON public.adoptions USING btree
+    (animal_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_adoptions_id
+
+-- DROP INDEX IF EXISTS public.ix_adoptions_id;
+
+CREATE INDEX IF NOT EXISTS ix_adoptions_id
+    ON public.adoptions USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_adoptions_user_id
+
+-- DROP INDEX IF EXISTS public.ix_adoptions_user_id;
+
+CREATE INDEX IF NOT EXISTS ix_adoptions_user_id
+    ON public.adoptions USING btree
+    (user_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+
+animals：
+-- Table: public.animals
+
+-- DROP TABLE IF EXISTS public.animals;
+
+CREATE TABLE IF NOT EXISTS public.animals
+(
+    id integer NOT NULL DEFAULT nextval('animals_id_seq'::regclass),
+    name character varying COLLATE pg_catalog."default",
+    breed character varying COLLATE pg_catalog."default",
+    age character varying COLLATE pg_catalog."default",
+    gender character varying COLLATE pg_catalog."default",
+    health_status character varying COLLATE pg_catalog."default",
+    vaccine_status character varying COLLATE pg_catalog."default",
+    personality character varying COLLATE pg_catalog."default",
+    image_url character varying COLLATE pg_catalog."default",
+    status character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone,
+    CONSTRAINT animals_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.animals
+    OWNER to postgres;
+-- Index: ix_animals_id
+
+-- DROP INDEX IF EXISTS public.ix_animals_id;
+
+CREATE INDEX IF NOT EXISTS ix_animals_id
+    ON public.animals USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_animals_name
+
+-- DROP INDEX IF EXISTS public.ix_animals_name;
+
+CREATE INDEX IF NOT EXISTS ix_animals_name
+    ON public.animals USING btree
+    (name COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+插入数据代码：
+INSERT INTO animals (name, breed, age, gender, health_status, vaccine_status, personality, image_url, status) 
+VALUES 
+('大橘', '中华田园猫', '2岁', '公', '健康，微胖', '已打第一针', '性格超级亲人，甚至有点粘人，给吃的就跟你跑', '/animals/大橘.jpg', '待领养'),
+('小白', '临清狮子猫', '1岁', '母', '有轻微猫藓', '未接种', '高冷女王，需要在安静的环境下慢慢熟悉。', '/animals/小白.jpg', '待领养'),
+('旺财', '中华田园犬', '3岁', '公', '后腿微跛', '疫苗齐全', '看门一把好手，忠诚憨厚，不护食。', '/animals/旺财.jpg', '待领养'),
+('奥利奥', '边牧串串', '5个月', '公', '非常健康', '已驱虫', '精力旺盛，非常聪明，学会了握手。', '/animals/奥利奥.jpg', '待领养'),
+('煤球', '黑猫', '8个月', '母', '健康', '疫苗齐全', '隐身术满级，晚上找不到猫。', '/animals/煤球.jpg', '待领养'),
+('大头', '缅因猫', '2岁', '公', '健康', '已接种', '高冷，你只会得到热脸贴冷屁股。', '/animals/大头.jpg', '待领养');
+
+
+
+
+donations:
+-- Table: public.donations
+
+-- DROP TABLE IF EXISTS public.donations;
+
+CREATE TABLE IF NOT EXISTS public.donations
+(
+    id integer NOT NULL DEFAULT nextval('donations_id_seq'::regclass),
+    user_id integer,
+    item_name character varying COLLATE pg_catalog."default",
+    quantity character varying COLLATE pg_catalog."default",
+    remarks character varying COLLATE pg_catalog."default",
+    donate_date timestamp without time zone,
+    CONSTRAINT donations_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.donations
+    OWNER to postgres;
+-- Index: ix_donations_id
+
+-- DROP INDEX IF EXISTS public.ix_donations_id;
+
+CREATE INDEX IF NOT EXISTS ix_donations_id
+    ON public.donations USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_donations_user_id
+
+-- DROP INDEX IF EXISTS public.ix_donations_user_id;
+
+CREATE INDEX IF NOT EXISTS ix_donations_user_id
+    ON public.donations USING btree
+    (user_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+
+
+lost_pets:
+-- Table: public.lost_pets
+
+-- DROP TABLE IF EXISTS public.lost_pets;
+
+CREATE TABLE IF NOT EXISTS public.lost_pets
+(
+    id integer NOT NULL DEFAULT nextval('lost_pets_id_seq'::regclass),
+    title character varying COLLATE pg_catalog."default",
+    type character varying COLLATE pg_catalog."default",
+    description character varying COLLATE pg_catalog."default",
+    contact character varying COLLATE pg_catalog."default",
+    status character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone,
+    CONSTRAINT lost_pets_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.lost_pets
+    OWNER to postgres;
+-- Index: ix_lost_pets_id
+
+-- DROP INDEX IF EXISTS public.ix_lost_pets_id;
+
+CREATE INDEX IF NOT EXISTS ix_lost_pets_id
+    ON public.lost_pets USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+
+
+tasks:
+-- Table: public.tasks
+
+-- DROP TABLE IF EXISTS public.tasks;
+
+CREATE TABLE IF NOT EXISTS public.tasks
+(
+    id integer NOT NULL DEFAULT nextval('tasks_id_seq'::regclass),
+    title character varying COLLATE pg_catalog."default",
+    description character varying COLLATE pg_catalog."default",
+    required_count integer,
+    status character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone,
+    CONSTRAINT tasks_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.tasks
+    OWNER to postgres;
+-- Index: ix_tasks_id
+
+-- DROP INDEX IF EXISTS public.ix_tasks_id;
+
+CREATE INDEX IF NOT EXISTS ix_tasks_id
+    ON public.tasks USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_tasks_title
+
+-- DROP INDEX IF EXISTS public.ix_tasks_title;
+
+CREATE INDEX IF NOT EXISTS ix_tasks_title
+    ON public.tasks USING btree
+    (title COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+
+users:
+-- Table: public.users
+
+-- DROP TABLE IF EXISTS public.users;
+
+CREATE TABLE IF NOT EXISTS public.users
+(
+    id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
+    username character varying COLLATE pg_catalog."default",
+    password character varying COLLATE pg_catalog."default",
+    real_name character varying COLLATE pg_catalog."default",
+    student_id character varying COLLATE pg_catalog."default",
+    phone character varying COLLATE pg_catalog."default",
+    role character varying COLLATE pg_catalog."default",
+    created_at timestamp without time zone,
+    CONSTRAINT users_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.users
+    OWNER to postgres;
+-- Index: ix_users_id
+
+-- DROP INDEX IF EXISTS public.ix_users_id;
+
+CREATE INDEX IF NOT EXISTS ix_users_id
+    ON public.users USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_users_student_id
+
+-- DROP INDEX IF EXISTS public.ix_users_student_id;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_users_student_id
+    ON public.users USING btree
+    (student_id COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_users_username
+
+-- DROP INDEX IF EXISTS public.ix_users_username;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username
+    ON public.users USING btree
+    (username COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+volunteers:
+-- Table: public.volunteers
+
+-- DROP TABLE IF EXISTS public.volunteers;
+
+CREATE TABLE IF NOT EXISTS public.volunteers
+(
+    id integer NOT NULL DEFAULT nextval('volunteers_id_seq'::regclass),
+    user_id integer,
+    reason character varying COLLATE pg_catalog."default",
+    available_time character varying COLLATE pg_catalog."default",
+    status character varying COLLATE pg_catalog."default",
+    apply_date timestamp without time zone,
+    CONSTRAINT volunteers_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.volunteers
+    OWNER to postgres;
+-- Index: ix_volunteers_id
+
+-- DROP INDEX IF EXISTS public.ix_volunteers_id;
+
+CREATE INDEX IF NOT EXISTS ix_volunteers_id
+    ON public.volunteers USING btree
+    (id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: ix_volunteers_user_id
+
+-- DROP INDEX IF EXISTS public.ix_volunteers_user_id;
+
+CREATE INDEX IF NOT EXISTS ix_volunteers_user_id
+    ON public.volunteers USING btree
+    (user_id ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+# Python 编译垃圾
+__pycache__/
+*.py[cod]
+
+# 虚拟环境 (非常重要，千万不要传)
+venv/
+env/
+.venv/
+
+# IDE 配置文件
+.idea/
+.vscode/
+
+# 环境变量与敏感信息 (防止数据库密码泄露)
+.env
+config.py
+*.log

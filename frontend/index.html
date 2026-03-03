@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>校园流浪动物救助 - 登录</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --text-color: #333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: none !important; animation: none !important; }
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* === 左侧：静态海报区 === */
+        .poster-section {
+            flex: 6;
+            position: relative;
+            background: url('http://127.0.0.1:8000/animals/大橘.jpg') no-repeat center center/cover;
+            background-color: #333;
+            overflow: hidden;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 60px;
+            color: white;
+            z-index: 2;
+        }
+        .overlay h1 { font-size: 3.5em; margin-bottom: 15px; }
+        .overlay p { font-size: 1.4em; opacity: 0.9; max-width: 600px; line-height: 1.6; }
+
+        /* === 右侧：登录表单区 === */
+        .login-section {
+            flex: 4;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .login-wrapper {
+            width: 80%;
+            max-width: 400px;
+            padding: 40px;
+        }
+        .brand {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .welcome-text { color: #888; margin-bottom: 40px; font-size: 1.1em; }
+
+        .input-group { position: relative; margin-bottom: 25px; }
+        .input-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #f0f2f5;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            background: #f9fbfc;
+        }
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            background: white;
+        }
+        .input-group input:focus + i { color: var(--primary-color); }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background: #ff5252; }
+        .btn-login:disabled { background: #ccc; cursor: not-allowed; }
+
+        .footer-links {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.95em;
+            color: #666;
+        }
+        .footer-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        .footer-links a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .poster-section { display: none; } 
+            .login-section { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="poster-section">
+    <div class="overlay">
+        <h1>每一次相遇<br>都是奇迹 ✨</h1>
+        <p>校园流浪动物救助平台致力于为每一个小生命寻找温暖的归宿。<br>加入我们，用爱终止流浪。</p>
+    </div>
+</div>
+
+<div class="login-section">
+    <div class="login-wrapper">
+        <div class="brand"><i class="fas fa-paw"></i> 救助站</div>
+        <p class="welcome-text">欢迎回来，请登录您的账号 👋</p>
+        
+        <div class="input-group">
+            <input type="text" id="username" placeholder="用户名 / 学号" autocomplete="off">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="密码">
+            <i class="fas fa-lock"></i>
+        </div>
+        
+        <button class="btn-login" onclick="handleLogin()">立即登录</button>
+        
+        <div class="footer-links">
+            还没有账号？<a href="register.html">注册新账号</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SERVER_URL = "http://127.0.0.1:8000";
+    
+    async function handleLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const btn = document.querySelector('.btn-login');
+
+        if(!u || !p) {
+            alert("请输入完整的账号和密码");
+            return;
+        }
+
+        btn.innerText = "登录中...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${SERVER_URL}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: u, password: p})
+            });
+
+            if(res.ok) {
+                const data = await res.json();
+                localStorage.setItem('currentUser', JSON.stringify(data));
+                btn.style.background = "#28a745"; 
+                btn.innerText = "✨ 登录成功！";
+                
+                setTimeout(() => { 
+                    if (data.role === 'admin') {
+                        location.href = 'admin.html';
+                    } else {
+                        location.href = 'home.html';
+                    }
+                }, 500);
+            } else {
+                const err = await res.json();
+                alert("登录失败：" + err.detail);
+                resetBtn();
+            }
+        } catch(e) {
+            console.error(e);
+            alert("无法连接到服务器，请确保后端已启动");
+            resetBtn();
+        }
+
+        function resetBtn(){ 
+            btn.innerText = "立即登录"; 
+            btn.disabled = false; 
+            btn.style.background = ""; 
+        }
+    }
+
+    document.addEventListener('keydown', function(event) { 
+        if(event.key === "Enter") handleLogin(); 
+    });
+</script>
+</body>
+</html>
